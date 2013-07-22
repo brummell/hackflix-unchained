@@ -1,4 +1,6 @@
 from pprint import pprint
+import numpy as np
+import scipy as sp
 
 class DB:
 
@@ -14,13 +16,14 @@ class DB:
         #movies that user has seen
         self.movies = {}
 
+    '''
     def load(self, critdict):
         self.users = critdict.keys();    
         for a in self.users:
             self.usermovs[a] = critdict[a].keys()
         for a in self.users:
             self.ratings[a] = critdict[a]
-    
+    '''
     
     def get_title_map(self, item_path):
         self.tmp_map = {}    
@@ -28,17 +31,33 @@ class DB:
             fields = line.split('|')
             self.tmp_map[fields[0]] = fields[1]
         return self.tmp_map
-
-     
+    
     def load(self, item_path, data_path):
         self.titlemap = self.get_title_map(item_path)
+        for line in open(data_path):
+            fields = line.split('\t')
+            if (fields[0] not in self.usermovs):
+                self.usermovs[fields[0]] = {}
+            self.usermovs[fields[0]][self.titlemap[fields[1]]] = fields[2]
+        return self.usermovs
+
+    def maxmov(self, data_path):
+        user_max = []
+        mov_max = []
+        for line in open(data_path):
+            fields = line.split('\t')
+            user_max.append(int(fields[0]))
+            mov_max.append(int(fields[1]))
+        return  [max(user_max), max(mov_max)] 
+    
+    def load_matrix(self, item_path, data_path):
         for line in open(data_path):
             fields = line.split('\t')
             if (fields[1] not in self.usermovs):
                 self.usermovs[fields[1]] = {}
             self.usermovs[fields[1]][self.titlemap[fields[0]]] = fields[2]
         return self.usermovs
-        
+     
     def get_ratings(self, user, movie):
         return self.ratings[user][movie]
         
@@ -62,5 +81,4 @@ if __name__ == '__main__':
         a = len(db.usermovs[key].values())
         b = b + a
     print b'''
-    print db.titlemap['196']
-    pprint(db.get_movies_for('242'))
+    pprint(db.maxmov('ml-100k/u.data'))
